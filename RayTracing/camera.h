@@ -13,9 +13,21 @@
 #include <sstream>
 #include <string>
 
+struct RenderConfig {
+    int image_width = 500;
+    double aspect_ratio = 16.0 / 9.0;
+    int samples_per_pixel = 50;
+    int max_depth = 10;
+
+    bool multithreaded = true;
+    unsigned thread_count = 0; 
+
+    bool benchmark_both = false;
+
+    std::string tag = "output"; 
+};
 
 class camera {
-    // cam defaults
 public:
     double aspect_ratio = 16.0 / 9.0;
     int image_width = 500;
@@ -30,7 +42,8 @@ public:
     double defocus_angle = 0.0; 
     double focus_dist = 10.0;
 
-    void render(const hittable& world) {
+    void render(const hittable& world) 
+    {
         initialize();
 
         namespace fs = std::filesystem;
@@ -42,10 +55,10 @@ public:
         const unsigned thread_count = hw;
 
         std::ostringstream name;
-        name << "cornell_"
+        name << "out_"
             << image_width << "x" << image_height
             << "_spp" << samples_per_pixel
-            << "_depth" << max_depth
+            << "_fd" << focus_dist
             << "_thr" << hw
             << ".ppm";
 
@@ -60,7 +73,6 @@ public:
         std::cerr << "Threads: " << hw << "\n";
         std::cerr << "====================================\n";
 
-        // Framebuffer
         std::vector<color> framebuffer(image_width * image_height, color(0, 0, 0));
 
         std::atomic<int> next_row{ 0 };
@@ -68,15 +80,18 @@ public:
 
         auto t_render_start = std::chrono::steady_clock::now();
 
-        // Worker threads: claim rows
-        auto worker = [&]() {
-            while (true) {
+        auto worker = [&]() 
+            {
+            while (true) 
+            {
                 int j = next_row.fetch_add(1);
                 if (j >= image_height) break;
 
-                for (int i = 0; i < image_width; ++i) {
+                for (int i = 0; i < image_width; ++i) 
+                {
                     color pixel_color(0, 0, 0);
-                    for (int s = 0; s < samples_per_pixel; ++s) {
+                    for (int s = 0; s < samples_per_pixel; ++s) 
+                    {
                         ray r = get_ray(i, j);
                         pixel_color += ray_color(r, max_depth, world);
                     }
@@ -87,7 +102,6 @@ public:
             }
             };
 
-        // Launch
         std::vector<std::thread> threads;
         threads.reserve(thread_count);
         for (unsigned t = 0; t < thread_count; ++t)
@@ -95,32 +109,33 @@ public:
 
         auto last_print = std::chrono::steady_clock::now();
 
-        // ETA smoothing
         double ema_rows_per_sec = 0.0;
         bool ema_initialized = false;
 
-        const int    ETA_MIN_ROWS = 25; 
+        const int ETA_MIN_ROWS = 25; 
         const double ETA_MIN_SECS = 2.0; 
         const double EMA_ALPHA = 0.15;
 
         while (rows_done.load() < image_height) {
             auto now = std::chrono::steady_clock::now();
-            if (now - last_print >= std::chrono::milliseconds(150)) {
+            if (now - last_print >= std::chrono::milliseconds(150)) 
+            {
                 last_print = now;
 
                 int done = rows_done.load();
                 double pct = 100.0 * (double)done / (double)image_height;
 
-                // elapsed since render start
                 double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - t_render_start).count() / 1000.0;
 
                 double inst_rows_per_sec = (elapsed > 0.0) ? (done / elapsed) : 0.0;
 
-                if (!ema_initialized) {
+                if (!ema_initialized) 
+                {
                     ema_rows_per_sec = inst_rows_per_sec;
                     ema_initialized = true;
                 }
-                else {
+                else 
+                {
                     ema_rows_per_sec = EMA_ALPHA * inst_rows_per_sec + (1.0 - EMA_ALPHA) * ema_rows_per_sec;
                 }
 
@@ -129,7 +144,8 @@ public:
                 std::cerr << "\rRender: " << std::fixed << std::setprecision(1)
                     << pct << "% (" << done << "/" << image_height << " rows)";
 
-                if (show_eta) {
+                if (show_eta) 
+                {
                     int remaining_rows = image_height - done;
                     double eta_sec = remaining_rows / ema_rows_per_sec;
 
@@ -137,19 +153,19 @@ public:
                     int eta_min = eta_int / 60;
                     int eta_rem = eta_int % 60;
 
-                    std::cerr << "  ETA: " << eta_min << "m " << eta_rem << "s ";
+                    std::cerr << "  ETA: " << format_time_seconds(eta_sec) << " ";
                 }
-                else {
+                else 
+                {
                     std::cerr << "  ETA: -- ";
                 }
-                std::cerr << "Elapsed Time: " << elapsed << "s";
+                std::cerr << "Elapsed: " << format_time_seconds(elapsed);
                 std::cerr << "   " << std::flush;
             }
 
             std::this_thread::sleep_for(std::chrono::milliseconds(25));
         }
 
-        // Join
         for (auto& th : threads) th.join();
 
         auto t_render_end = std::chrono::steady_clock::now();
@@ -166,10 +182,8 @@ public:
         std::cerr << "Writing file...\n";
         auto t_write_start = std::chrono::steady_clock::now();
 
-        // Header
         out << "P3\n" << image_width << ' ' << image_height << "\n255\n";
 
-        // Write progress
         for (int j = 0; j < image_height; ++j) 
         {
             for (int i = 0; i < image_width; ++i) 
@@ -191,16 +205,15 @@ public:
 
         std::cerr << "\rWrite:  100.0% (" << image_height << "/" << image_height << " rows)   \n";
 
-        // Timing summary
         auto render_ms = std::chrono::duration_cast<std::chrono::milliseconds>(t_render_end - t_render_start).count();
         auto write_ms = std::chrono::duration_cast<std::chrono::milliseconds>(t_write_end - t_write_start).count();
         auto total_ms = std::chrono::duration_cast<std::chrono::milliseconds>(t_write_end - t_start).count();
 
-        std::cerr << "=== Timing ===\n";
-        std::cerr << "Render: " << (render_ms / 1000.0) << " s\n";
-        std::cerr << "Write:  " << (write_ms / 1000.0) << " s\n";
-        std::cerr << "Total:  " << (total_ms / 1000.0) << " s\n";
-        std::cerr << "=============\n";
+        std::cerr << "============= Timing ===============\n";
+        std::cerr << "Render: " << format_time_ms(render_ms) << "\n";
+        std::cerr << "Write:  " << format_time_ms(write_ms) << "\n";
+        std::cerr << "Total:  " << format_time_ms(total_ms) << "\n";
+        std::cerr << "====================================\n";
         std::cerr << "Done. Wrote: " << outPath.string() << "\n";
     }
 
@@ -309,5 +322,24 @@ private:
 
         out << ir << ' ' << ig << ' ' << ib << '\n';
     }
+    static std::string format_time_seconds(double seconds)
+    {
+        if (seconds < 0.0) seconds = 0.0;
 
+        int total = static_cast<int>(seconds + 0.5);
+        if (total < 60) {
+            return std::to_string(total) + "s";
+        }
+
+        int mins = total / 60;
+        int secs = total % 60;
+
+        return std::to_string(mins) + "m " + std::to_string(secs) + "s";
+    }
+
+    static std::string format_time_ms(long long ms)
+    {
+        double seconds = ms / 1000.0;
+        return format_time_seconds(seconds);
+    }
 };
