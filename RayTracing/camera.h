@@ -2,8 +2,16 @@
 #include "rtweekend.h"
 #include "hittable.h"
 #include "material.h"
+#include <thread>
+#include <vector>
+#include <atomic>
+#include <chrono>
+#include <iomanip>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <sstream>
+#include <string>
 
 
 class camera {
@@ -22,42 +30,178 @@ public:
     double defocus_angle = 0.0; 
     double focus_dist = 10.0;
 
-    void render(const hittable& world) 
-    {
+    void render(const hittable& world) {
         initialize();
 
-        const char* filename = "Output/out.ppm";
-        std::ofstream out(filename, std::ios::out | std::ios::trunc);
+        namespace fs = std::filesystem;
+
+        fs::path outDir = fs::current_path() / "Outputs";
+        fs::create_directories(outDir);
+
+        const unsigned hw = std::max(1u, std::thread::hardware_concurrency());
+        const unsigned thread_count = hw;
+
+        std::ostringstream name;
+        name << "cornell_"
+            << image_width << "x" << image_height
+            << "_spp" << samples_per_pixel
+            << "_depth" << max_depth
+            << "_thr" << hw
+            << ".ppm";
+
+        fs::path outPath = outDir / name.str();
+
+        auto t_start = std::chrono::steady_clock::now();
+
+        std::cerr << "========== Render Settings =========\n";
+        std::cerr << "Output: " << outPath.string() << "\n";
+        std::cerr << "Resolution: " << image_width << " x " << image_height << "\n";
+        std::cerr << "Samples/Pixel: " << samples_per_pixel << "\n";
+        std::cerr << "Threads: " << hw << "\n";
+        std::cerr << "====================================\n";
+
+        // Framebuffer
+        std::vector<color> framebuffer(image_width * image_height, color(0, 0, 0));
+
+        std::atomic<int> next_row{ 0 };
+        std::atomic<int> rows_done{ 0 };
+
+        auto t_render_start = std::chrono::steady_clock::now();
+
+        // Worker threads: claim rows
+        auto worker = [&]() {
+            while (true) {
+                int j = next_row.fetch_add(1);
+                if (j >= image_height) break;
+
+                for (int i = 0; i < image_width; ++i) {
+                    color pixel_color(0, 0, 0);
+                    for (int s = 0; s < samples_per_pixel; ++s) {
+                        ray r = get_ray(i, j);
+                        pixel_color += ray_color(r, max_depth, world);
+                    }
+                    framebuffer[j * image_width + i] = pixel_color;
+                }
+
+                rows_done.fetch_add(1);
+            }
+            };
+
+        // Launch
+        std::vector<std::thread> threads;
+        threads.reserve(thread_count);
+        for (unsigned t = 0; t < thread_count; ++t)
+            threads.emplace_back(worker);
+
+        auto last_print = std::chrono::steady_clock::now();
+
+        // ETA smoothing
+        double ema_rows_per_sec = 0.0;
+        bool ema_initialized = false;
+
+        const int    ETA_MIN_ROWS = 25; 
+        const double ETA_MIN_SECS = 2.0; 
+        const double EMA_ALPHA = 0.15;
+
+        while (rows_done.load() < image_height) {
+            auto now = std::chrono::steady_clock::now();
+            if (now - last_print >= std::chrono::milliseconds(150)) {
+                last_print = now;
+
+                int done = rows_done.load();
+                double pct = 100.0 * (double)done / (double)image_height;
+
+                // elapsed since render start
+                double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - t_render_start).count() / 1000.0;
+
+                double inst_rows_per_sec = (elapsed > 0.0) ? (done / elapsed) : 0.0;
+
+                if (!ema_initialized) {
+                    ema_rows_per_sec = inst_rows_per_sec;
+                    ema_initialized = true;
+                }
+                else {
+                    ema_rows_per_sec = EMA_ALPHA * inst_rows_per_sec + (1.0 - EMA_ALPHA) * ema_rows_per_sec;
+                }
+
+                bool show_eta = (done >= ETA_MIN_ROWS) && (elapsed >= ETA_MIN_SECS) && (ema_rows_per_sec > 0.0);
+
+                std::cerr << "\rRender: " << std::fixed << std::setprecision(1)
+                    << pct << "% (" << done << "/" << image_height << " rows)";
+
+                if (show_eta) {
+                    int remaining_rows = image_height - done;
+                    double eta_sec = remaining_rows / ema_rows_per_sec;
+
+                    int eta_int = (int)(eta_sec + 0.5);
+                    int eta_min = eta_int / 60;
+                    int eta_rem = eta_int % 60;
+
+                    std::cerr << "  ETA: " << eta_min << "m " << eta_rem << "s ";
+                }
+                else {
+                    std::cerr << "  ETA: -- ";
+                }
+                std::cerr << "Elapsed Time: " << elapsed << "s";
+                std::cerr << "   " << std::flush;
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(25));
+        }
+
+        // Join
+        for (auto& th : threads) th.join();
+
+        auto t_render_end = std::chrono::steady_clock::now();
+        std::cerr << "\rRender: 100.0% (" << image_height << "/" << image_height
+            << " rows)  ETA: 0m 0s   \n";
+
+        std::ofstream out(outPath, std::ios::out | std::ios::trunc);
         if (!out) 
         {
-            std::cerr << "ERROR :( Failed to open output file: " << filename << "\n";
+            std::cerr << "ERROR: Failed to open output file: " << outPath.string() << "\n";
             return;
         }
 
+        std::cerr << "Writing file...\n";
+        auto t_write_start = std::chrono::steady_clock::now();
+
+        // Header
         out << "P3\n" << image_width << ' ' << image_height << "\n255\n";
 
-        std::cerr << "Canvas size of " << image_width << "x" << image_height
-            << " (" << samples_per_pixel << " Samples Per Pixel)...\n";
-
-        for (int j = 0; j < image_height; ++j) {
-            std::cerr << "\rScanlines remaining: " << (image_height - j) << "   " << std::flush;
-
+        // Write progress
+        for (int j = 0; j < image_height; ++j) 
+        {
             for (int i = 0; i < image_width; ++i) 
             {
-                color pixel_color(0, 0, 0);
+                write_color(out, framebuffer[j * image_width + i]);
+            }
 
-                for (int s = 0; s < samples_per_pixel; ++s) 
-                {
-                    ray r = get_ray(i, j);
-                    pixel_color += ray_color(r, max_depth, world);
-                }
-
-                write_color(out, pixel_color);
+            if ((j % 10) == 0 || j == image_height - 1)
+            {
+                double pct = 100.0 * (double)(j + 1) / (double)image_height;
+                std::cerr << "\rWrite:  " << std::fixed << std::setprecision(1)
+                    << pct << "% (" << (j + 1) << "/" << image_height << " rows)   "
+                    << std::flush;
             }
         }
-        system("cls");
-        std::cerr << "Generated image at: " << filename << "\n";
+
+        auto t_write_end = std::chrono::steady_clock::now();
         out.close();
+
+        std::cerr << "\rWrite:  100.0% (" << image_height << "/" << image_height << " rows)   \n";
+
+        // Timing summary
+        auto render_ms = std::chrono::duration_cast<std::chrono::milliseconds>(t_render_end - t_render_start).count();
+        auto write_ms = std::chrono::duration_cast<std::chrono::milliseconds>(t_write_end - t_write_start).count();
+        auto total_ms = std::chrono::duration_cast<std::chrono::milliseconds>(t_write_end - t_start).count();
+
+        std::cerr << "=== Timing ===\n";
+        std::cerr << "Render: " << (render_ms / 1000.0) << " s\n";
+        std::cerr << "Write:  " << (write_ms / 1000.0) << " s\n";
+        std::cerr << "Total:  " << (total_ms / 1000.0) << " s\n";
+        std::cerr << "=============\n";
+        std::cerr << "Done. Wrote: " << outPath.string() << "\n";
     }
 
 
@@ -129,7 +273,8 @@ private:
         if (depth <= 0) return color(0, 0, 0);
 
         hit_record rec;
-        if (world.hit(r, interval(0.001, interval::universe.max), rec)) {
+        if (world.hit(r, interval(0.001, interval::universe.max), rec)) 
+        {
             ray scattered;
             color attenuation;
             if (rec.mat && rec.mat->scatter(r, rec, attenuation, scattered))
