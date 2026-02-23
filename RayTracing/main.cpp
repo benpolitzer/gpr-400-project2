@@ -5,6 +5,7 @@
 #include "hittable_list.h"
 #include "sphere.h"
 #include "material.h"
+#include "box.h"
 
 static hittable_list random_scene() 
 {
@@ -56,20 +57,26 @@ static hittable_list random_scene()
     return world;
 }
 
+hittable_list test_box_scene() {
+    hittable_list world;
+    auto white = make_shared<lambertian>(color(0.73, 0.73, 0.73));
+    world.add(make_shared<box>(point3(-1, 0, -1), point3(1, 2, 1), white, true));
+    return world;
+}
+
 int main() 
 {
-    // replace default cam variables
-    auto world = random_scene();
+    auto world = test_box_scene();
 
     camera cam;
     cam.aspect_ratio = 16.0 / 9.0;
-    cam.image_width = 1920;
+    cam.image_width = 500;
     cam.samples_per_pixel = 50; 
     cam.max_depth = 10;
 
     cam.vfov = 20;
-    cam.lookfrom = point3(13, 2, 3);
-    cam.lookat = point3(0, 0, 0);
+    cam.lookfrom = point3(10, 8, 10);
+    cam.lookat = point3(0, 1, 0);
     cam.vup = vec3(0, 1, 0);
 
     cam.defocus_angle = 0.6;
