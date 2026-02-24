@@ -74,7 +74,7 @@ hittable_list test_inf_cylindar_scene() {
 
 int main() 
 {
-    auto world = test_inf_cylindar_scene();
+    auto world = random_scene();
 
     camera cam;
     cam.aspect_ratio = 16.0 / 9.0;
