@@ -1,8 +1,7 @@
 #pragma once
-#include "hittable.h"
 #include "sphere.h"
 
-class infiniteCylindar : hittable
+class infiniteCylindar : public hittable
 {
 public:
 	point3 center;
@@ -11,7 +10,7 @@ public:
 	shared_ptr<material> mat;
 
 	infiniteCylindar() : center(), dir(), radius(1), mat(nullptr) {}
-	infiniteCylindar(point3 c, vec3 d, double r, double l, shared_ptr<material> m) :
+	infiniteCylindar(point3 c, vec3 d, double r, shared_ptr<material> m) :
 		center(c), dir(d), radius(r), mat(std::move(m)) {
 	}
 

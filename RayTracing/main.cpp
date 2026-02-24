@@ -6,6 +6,7 @@
 #include "sphere.h"
 #include "material.h"
 #include "box.h"
+#include "infinite_cylinder.h"
 
 static hittable_list random_scene() 
 {
@@ -61,6 +62,13 @@ hittable_list test_box_scene() {
     hittable_list world;
     auto white = make_shared<lambertian>(color(0.73, 0.73, 0.73));
     world.add(make_shared<box>(point3(-1, 0, -1), point3(1, 2, 1), white, true));
+    return world;
+}
+
+hittable_list test_inf_cylindar_scene() {
+    hittable_list world;
+    auto white = make_shared<lambertian>(color(0.73, 0.73, 0.73));
+    world.add(make_shared<infiniteCylindar>(point3(0, 0, 0), vec3(0, 1, 0), 5, white));
     return world;
 }
 

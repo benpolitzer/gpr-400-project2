@@ -124,12 +124,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="infinite_cylinder.h" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="vec3.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="box.h" />
     <ClInclude Include="camera.h" />
+    <ClInclude Include="cylindar.h" />
     <ClInclude Include="finite_plane.h" />
     <ClInclude Include="hittable.h" />
     <ClInclude Include="hittable_list.h" />

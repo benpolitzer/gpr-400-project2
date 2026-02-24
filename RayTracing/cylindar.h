@@ -1,7 +1,7 @@
 #pragma once
 #include "hittable.h"
 
-class cylindar : hittable
+class cylindar : public hittable
 {
 public:
 	point3 center;
