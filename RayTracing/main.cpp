@@ -68,13 +68,13 @@ hittable_list test_box_scene() {
 hittable_list test_inf_cylindar_scene() {
     hittable_list world;
     auto white = make_shared<lambertian>(color(0.73, 0.73, 0.73));
-    world.add(make_shared<infiniteCylindar>(point3(0, 0, 0), vec3(0, 1, 0), 5, white));
+    world.add(make_shared<infiniteCylindar>(point3(0, 0, 0), vec3(0, 1, 0), 1, white));
     return world;
 }
 
 int main() 
 {
-    auto world = test_box_scene();
+    auto world = test_inf_cylindar_scene();
 
     camera cam;
     cam.aspect_ratio = 16.0 / 9.0;

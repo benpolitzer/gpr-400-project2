@@ -17,7 +17,7 @@ public:
 	bool hit(const ray& r, interval ray_t, hit_record& rec) const override
 	{
 		//check the colision as if its 2d
-		point3 pointOnPlane = r.origin() - dir * (dot(center - r.origin(), dir) / dot(dir, dir));
+		point3 pointOnPlane = r.origin() - dir * (dot(r.origin() - center, dir) / dot(dir, dir));
 		vec3 dirOnPlane = r.direction() - dir * (dot(r.direction(), dir) / dot(dir, dir));
 		ray rayOnPlane(pointOnPlane, dirOnPlane);
 		sphere s(center, radius, mat);
