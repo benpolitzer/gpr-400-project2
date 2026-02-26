@@ -1,6 +1,6 @@
 #pragma once
 #include <limits>
-
+// Defines a numeric interval (min, max) used for valid ray hit ranges, clamping, and avoiding invalid intersections
 class interval {
 public:
     double min, max;

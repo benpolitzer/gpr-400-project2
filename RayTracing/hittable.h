@@ -1,8 +1,10 @@
 #pragma once
 #include "rtweekend.h"
 
-class material;
+// Declares the base interface for all renderable objects
+    // hit_record structure used to store intersection details
 
+class material;
 struct hit_record 
 {
     point3 p;
@@ -11,7 +13,10 @@ struct hit_record
     double t{};
     bool front_face{};
 
-    void set_face_normal(const ray& r, const vec3& outward_normal) 
+    double u = 0.0;   
+    double v = 0.0; 
+
+    void set_face_normal(const ray& r, const vec3& outward_normal)
     {
         front_face = dot(r.direction(), outward_normal) < 0;
         normal = front_face ? outward_normal : -outward_normal;

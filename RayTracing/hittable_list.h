@@ -2,6 +2,7 @@
 #include <vector>
 #include "hittable.h"
 
+// Container for multiple hittable objects that tests a ray against all objects and returns the closest valid hit
 class hittable_list : public hittable {
 public:
     std::vector<shared_ptr<hittable>> objects;
@@ -16,9 +17,9 @@ public:
     {
         hit_record temp_rec;
         bool hit_anything = false;
-        auto closest = ray_t.max;
+        double closest = ray_t.max;
 
-        for (const auto& object : objects) 
+        for (const std::shared_ptr<hittable>& object : objects) 
         {
             if (object->hit(r, interval(ray_t.min, closest), temp_rec)) 
             {

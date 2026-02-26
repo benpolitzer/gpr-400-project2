@@ -8,7 +8,8 @@
 #include "interval.h"
 #include "ray.h"
 #include "vec3.h"
-
+// Shared utility header for the ray tracer 
+    // common includes, constants, random number helpers, math helpers, and utility functions
 using std::make_shared;
 using std::shared_ptr;
 
@@ -48,7 +49,7 @@ inline vec3 random_in_unit_sphere()
 {
     while (true) 
     {
-        auto p = random_vec3(-1, 1);
+        vec3 p = random_vec3(-1, 1);
         if (p.length_squared() >= 1) continue;
         return p;
     }
@@ -63,7 +64,7 @@ inline vec3 random_in_unit_disk()
 {
     while (true) 
     {
-        auto p = vec3(random_double(-1, 1), random_double(-1, 1), 0);
+        vec3 p = vec3(random_double(-1, 1), random_double(-1, 1), 0);
         if (p.length_squared() >= 1) continue;
         return p;
     }
@@ -76,7 +77,7 @@ inline vec3 reflect(const vec3& v, const vec3& n)
 
 inline vec3 refract(const vec3& uv, const vec3& n, double etai_over_etat) 
 {
-    auto cos_theta = std::fmin(dot(-uv, n), 1.0);
+    double cos_theta = std::fmin(dot(-uv, n), 1.0);
     vec3 r_out_perp = etai_over_etat * (uv + cos_theta * n);
     vec3 r_out_parallel = -std::sqrt(std::fabs(1.0 - r_out_perp.length_squared())) * n;
     return r_out_perp + r_out_parallel;

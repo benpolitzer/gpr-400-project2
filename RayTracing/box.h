@@ -5,6 +5,7 @@
 #include "material.h"
 #include "rtweekend.h"
 
+// Construct a box from set of finite_planes
 class box : public hittable {
 public:
     box() = default;
@@ -16,10 +17,10 @@ public:
         const double dy = box_max.y() - box_min.y();
         const double dz = box_max.z() - box_min.z();
 
-        // no sides
+        // Sanity: degenerate box => no sides
         if (dx <= 0 || dy <= 0 || dz <= 0) return;
 
-        // l;eft
+        // left
         sides.add(make_shared<finite_plane>(
             point3(box_min.x(), box_min.y(), box_min.z()),
             vec3(0, dy, 0),

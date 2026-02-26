@@ -2,7 +2,7 @@
 #include "hittable.h"
 #include "material.h"
 #include "rtweekend.h"
-
+// Finite rectangular plane defined by a corner point and two edge vectors
 class finite_plane : public hittable {
 public:
     finite_plane() = default;
@@ -20,7 +20,7 @@ public:
         det = uu * vv - uv * uv;
     }
 
-    bool hit(const ray& r, interval ray_t, hit_record& rec) const override
+    bool hit(const ray& r, interval ray_t, hit_record& rec) const override 
     {
         const double denom = dot(n, r.direction());
         if (fabs(denom) < 1e-8) return false; // parallel

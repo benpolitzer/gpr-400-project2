@@ -2,6 +2,7 @@
 #include <cmath>
 #include <iostream>
 
+// 3D vector class used for math throughout the renderer
 class vec3 
 {
 public:
@@ -27,7 +28,7 @@ public:
 
     bool near_zero() const 
     {
-        const auto s = 1e-8;
+        const double s = 1e-8;
         return (std::fabs(e[0]) < s) && (std::fabs(e[1]) < s) && (std::fabs(e[2]) < s);
     }
 };

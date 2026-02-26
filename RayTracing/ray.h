@@ -1,6 +1,6 @@
 #pragma once
 #include "vec3.h"
-
+// Defines a ray (origin + direction) and helper functions
 class ray 
 {
 public:

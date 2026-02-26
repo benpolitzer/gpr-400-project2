@@ -1,27 +1,55 @@
 #pragma once
 #include "hittable.h"
-
+#include "texture.h"   
+#include <utility> 
+// Surface/material behavior for ray hits (diffuse, metal, glass, light)
 class material 
 {
 public:
     virtual ~material() = default;
     virtual bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const = 0;
+    virtual color emitted() const { return color(0, 0, 0); }
 };
-
-class lambertian : public material 
-{
+class diffuse_light : public material {
 public:
-    color albedo;
-    explicit lambertian(const color& a) : albedo(a) {}
+    diffuse_light(const color& emit_color) : emit(emit_color) {}
 
-    bool scatter(const ray&, const hit_record& rec, color& attenuation, ray& scattered) const override 
-    {
-        auto scatter_direction = rec.normal + random_unit_vector();
-        if (scatter_direction.near_zero()) scatter_direction = rec.normal;
+    bool scatter(const ray& r_in, const hit_record& rec, color& attenuation, ray& scattered) const override {
+        return false; 
+    }
+
+    color emitted() const override {
+        return emit;
+    }
+
+private:
+    color emit;
+};
+class lambertian : public material {
+public:
+    explicit lambertian(const color& a)
+        : albedo(make_shared<solid_color>(a)) {
+    }
+
+    explicit lambertian(shared_ptr<texture> tex)
+        : albedo(std::move(tex)) {
+    }
+
+    bool scatter(const ray&, const hit_record& rec, color& attenuation, ray& scattered) const override {
+        vec3 scatter_direction = rec.normal + random_unit_vector();
+
+        if (scatter_direction.near_zero())
+            scatter_direction = rec.normal;
+
         scattered = ray(rec.p, scatter_direction);
-        attenuation = albedo;
+
+        // texture sample
+        attenuation = albedo->value(rec.u, rec.v, rec.p);
         return true;
     }
+
+private:
+    shared_ptr<texture> albedo;
 };
 
 class metal : public material 
@@ -51,7 +79,7 @@ public:
     static double reflectance(double cosine, double ref_idx) 
     {
         // schlick approx
-        auto r0 = (1 - ref_idx) / (1 + ref_idx);
+        double r0 = (1 - ref_idx) / (1 + ref_idx);
         r0 = r0 * r0;
         return r0 + (1 - r0) * std::pow((1 - cosine), 5);
     }
