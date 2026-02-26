@@ -126,6 +126,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="scenes.h" />
     <ClCompile Include="vec3.h" />
   </ItemGroup>
   <ItemGroup>

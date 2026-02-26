@@ -29,6 +29,7 @@ struct RenderConfig {
 
     bool benchmark_both = false;
     std::string tag = "Output";
+   
 };
 
 class camera {
@@ -392,8 +393,9 @@ private:
         // Background/Skybox
         vec3 unit_dir = unit_vector(r.direction());
         double t = 0.5 * (unit_dir.y() + 1.0);
-        return (1.0 - t) * color(1.0, 1.0, 1.0)
-            + t * color(0.5, 0.7, 1.0);
+        return color(0, 0, 0);
+        //return (1.0 - t) * color(1.0, 1.0, 1.0)
+           // + t * color(0.5, 0.7, 1.0);
     }
 
     // Clamp to stay within 0-255 range

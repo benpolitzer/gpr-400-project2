@@ -21,6 +21,9 @@
     <ClCompile Include="vec3.h">
       <Filter>Header Files</Filter>
     </ClCompile>
+    <ClCompile Include="scenes.h">
+      <Filter>Header Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ray.h">
