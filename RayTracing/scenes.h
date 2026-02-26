@@ -9,8 +9,6 @@
 #include "image_texture.h"
 #include "finite_plane.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
 
 // Ray Tracing in One Weekend Tutorial scene (with minor tweaks)
 static hittable_list random_scene()

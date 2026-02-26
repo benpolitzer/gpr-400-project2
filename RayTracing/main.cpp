@@ -23,7 +23,7 @@ int main()
     // Image settings
     cam.aspect_ratio = 16.0 / 9.0;
     cam.image_width = 1920;
-    cam.samples_per_pixel = 1000;
+    cam.samples_per_pixel = 500;
     cam.max_depth = 50;
 
     // Camera placement
