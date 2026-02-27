@@ -8,7 +8,9 @@
 #include "box.h"
 #include "image_texture.h"
 #include "finite_plane.h"
-
+#include "infinite_cylinder.h"
+#include "cylinder.h"
+#include "capsule.h"
 
 // Ray Tracing in One Weekend Tutorial scene (with minor tweaks)
 static hittable_list random_scene()
@@ -76,6 +78,81 @@ static hittable_list random_scene()
 
     return world;
 }
+
+static hittable_list random_cylinder_scene()
+{
+    hittable_list world;
+
+    std::shared_ptr<material> ground_material =
+        std::make_shared<lambertian>(color(0.5, 0.5, 0.5));
+
+    world.add(std::make_shared<sphere>(
+        point3(0.0, -1000.0, 0.0),
+        1000.0,
+        ground_material
+    ));
+
+    for (int a = -11; a < 11; ++a)
+    {
+        for (int b = -11; b < 11; ++b)
+        {
+            double choose_mat = random_double();
+            point3 center(
+                static_cast<double>(a) + 0.9 * random_double(),
+                0.2,
+                static_cast<double>(b) + 0.9 * random_double()
+            );
+
+            vec3 dir = random_in_unit_sphere();
+
+            if ((center - point3(4.0, 0.2, 0.0)).length() > 0.9)
+            {
+                std::shared_ptr<material> cylinder_material;
+
+                if (choose_mat < 0.8)
+                {
+                    // Diffuse
+                    color albedo = random_vec3() * random_vec3();
+                    cylinder_material = std::make_shared<lambertian>(albedo);
+                }
+                else if (choose_mat < 0.95)
+                {
+                    // Metal
+                    color albedo = random_vec3(0.5, 1.0);
+                    double fuzz = random_double(0.0, 0.5);
+                    cylinder_material = std::make_shared<metal>(albedo, fuzz);
+                }
+                else
+                {
+                    // Glass
+                    cylinder_material = std::make_shared<dielectric>(1.5);
+                }
+
+                world.add(std::make_shared<cylinder>(center, dir, 0.2, 0.1, cylinder_material));
+            }
+        }
+    }
+
+    std::shared_ptr<material> material1 = std::make_shared<dielectric>(1.5);
+    world.add(std::make_shared<infinite_cylinder>(
+        point3(0.0, 1.0, 0.0), vec3(0, 1, 0), 1, material1
+    ));
+
+    std::shared_ptr<material> material2 =
+        std::make_shared<lambertian>(color(0.4, 0.2, 0.1));
+    world.add(std::make_shared<infinite_cylinder>(
+        point3(-4.0, 1.0, 0.0),vec3(0, 1, 0), 1, material2
+    ));
+
+    std::shared_ptr<material> material3 =
+        std::make_shared<metal>(color(0.7, 0.6, 0.5), 0.0);
+    world.add(std::make_shared<infinite_cylinder>(
+        point3(4.0, 1.0, 0.0), vec3(0, 1, 0), 1, material3
+    ));
+
+    return world;
+}
+
 // Cornell box test
 static hittable_list cornell_room_basic()
 {
@@ -172,6 +249,71 @@ static hittable_list test_box_scene()
 
     return world;
 }
+
+// Infinite Cylindar test
+static hittable_list test_inf_cylinder()
+{
+    hittable_list world;
+
+    std::shared_ptr<material> white = std::make_shared<lambertian>(color(0.73, 0.73, 0.73));
+    world.add(std::make_shared<infinite_cylinder>(
+        point3(-1.0, 0.0, -1.0),
+        unit_vector(vec3(1.0, 0.0, 1.0)),
+        1.0,
+        white
+    ));
+
+    return world;
+}
+
+// Cylindar test
+static hittable_list test_cylinder()
+{
+    hittable_list world;
+
+    std::shared_ptr<material> white = std::make_shared<lambertian>(color(0.73, 0.73, 0.73));
+    world.add(std::make_shared<cylinder>(
+        point3(-1.0, 0.0, -1.0),
+        unit_vector(vec3(3.0, 0.0, 1.0)),
+        1.0,
+        3.0,
+        white
+    ));
+
+    return world;
+}
+
+static hittable_list test_capsule()
+{
+    hittable_list world;
+
+    std::shared_ptr<material> white = std::make_shared<lambertian>(color(0.73, 0.73, 0.73));
+    world.add(std::make_shared<capsule>(
+        point3(-1.0, 0.0, -1.0),
+        unit_vector(vec3(3.0, 0.0, 1.0)),
+        1.0,
+        3.0,
+        white
+    ));
+
+    return world;
+}
+
+// Sphere test
+static hittable_list testSphere()
+{
+    hittable_list world;
+
+    std::shared_ptr<material> white = std::make_shared<lambertian>(color(0.73, 0.73, 0.73));
+    world.add(std::make_shared<sphere>(
+        point3(-1.0, 0.0, -1.0),
+        1.0,
+        white
+    ));
+
+    return world;
+}
+
 // Texture-mapping test
 static hittable_list earth_scene()
 {

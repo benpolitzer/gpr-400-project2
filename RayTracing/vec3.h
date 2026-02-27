@@ -57,4 +57,7 @@ inline vec3 cross(const vec3& u, const vec3& v)
         u.e[0] * v.e[1] - u.e[1] * v.e[0]
     );
 }
+
+inline vec3 project(const vec3& u, const vec3& v) { return v * (dot(u, v) / dot(v, v)); }
+
 inline vec3 unit_vector(vec3 v) { return v / v.length(); }

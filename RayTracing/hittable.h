@@ -23,7 +23,7 @@ struct hit_record
     }
 };
 
-class hittable 
+class hittable
 {
 public:
     virtual ~hittable() = default;

@@ -125,6 +125,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="infinite_plane.h" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="scenes.h" />
     <ClCompile Include="vec3.h" />
@@ -132,10 +133,13 @@
   <ItemGroup>
     <ClInclude Include="box.h" />
     <ClInclude Include="camera.h" />
+    <ClInclude Include="capsule.h" />
+    <ClInclude Include="cylinder.h" />
     <ClInclude Include="finite_plane.h" />
     <ClInclude Include="hittable.h" />
     <ClInclude Include="hittable_list.h" />
     <ClInclude Include="image_texture.h" />
+    <ClInclude Include="infinite_cylinder.h" />
     <ClInclude Include="interval.h" />
     <ClInclude Include="material.h" />
     <ClInclude Include="ray.h" />
