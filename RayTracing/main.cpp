@@ -17,7 +17,7 @@ int main()
 {
     // Target Scene
     //hittable_list world = cornell_room_basic();
-    hittable_list world = cornell_room_basic();
+    hittable_list world = test_capsule();
     camera cam;
 
     // Image settings
@@ -28,20 +28,19 @@ int main()
 
     // Camera placement for cornell box
     cam.vfov = 40.0;
-    cam.lookfrom = point3(0.0, 1.0, -4);
+    /*cam.lookfrom = point3(0.0, 1.0, -4);
     cam.lookat = point3(0.0, 1.0, 0.0);
-    cam.vup = vec3(0.0, 1.0, 0.0);
+    cam.vup = vec3(0.0, 1.0, 0.0);*/
 
     // Camera placement for test scene
-    /*cam.lookfrom = point3(0, 3, 5);
+    cam.lookfrom = point3(0, 8, 20);
     cam.lookat = point3(0, 1, 0);
-    cam.vup = vec3(0, 1, 0);*/
-
+    cam.vup = vec3(0, 1, 0);
 
     // Depth of field stuff
     cam.defocus_angle = 0.0;
     cam.focus_dist = 6;
 
-    cam.render(world);
+    cam.render_normals(world);
     return 0;
 }

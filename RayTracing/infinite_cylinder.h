@@ -22,8 +22,8 @@ public:
 		ray rayOnPlane(pointOnPlane, dirOnPlane);
 		sphere s(center, radius, mat);
 
-		//this hits the infinite plane
-		if (s.hit(rayOnPlane, ray_t, rec))
+		//this hits the infinite cylinder
+		if (s.hit(rayOnPlane, ray_t, rec) && rec.t > 0)
 		{
 			rec.p = r.origin() + r.direction() * rec.t;
 			return true;

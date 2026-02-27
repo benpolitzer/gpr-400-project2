@@ -750,9 +750,9 @@ private:
         vec3 unit_dir = unit_vector(r.direction());
         double t = 0.5 * (unit_dir.y() + 1.0);
         //checkpoint for development
-        return color(0, 0, 0);
-        /*return (1.0 - t) * color(1.0, 1.0, 1.0)
-            + t * color(0.5, 0.7, 1.0);*/
+        //return color(0, 0, 0);
+        return (1.0 - t) * color(1.0, 1.0, 1.0)
+            + t * color(0.5, 0.7, 1.0);
     }
 
     color ray_normal(const ray& r, int depth, const hittable& world) const

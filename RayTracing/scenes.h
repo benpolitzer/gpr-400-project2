@@ -11,6 +11,7 @@
 #include "infinite_cylinder.h"
 #include "cylinder.h"
 #include "capsule.h"
+#include "cone.h"
 
 // Ray Tracing in One Weekend Tutorial scene (with minor tweaks)
 static hittable_list random_scene()
@@ -289,6 +290,7 @@ static hittable_list test_cylinder()
     return world;
 }
 
+//Capsule test
 static hittable_list test_capsule()
 {
     hittable_list world;
@@ -305,8 +307,25 @@ static hittable_list test_capsule()
     return world;
 }
 
+// Cone test
+static hittable_list test_cone()
+{
+    hittable_list world;
+
+    std::shared_ptr<material> white = std::make_shared<lambertian>(color(0.73, 0.73, 0.73));
+    world.add(std::make_shared<cone>(
+        point3(-1.0, 0.0, -1.0),
+        unit_vector(vec3(1.0, 0.0, 1.0)),
+        1.0,
+        3.0,
+        white
+    ));
+
+    return world;
+}
+
 // Sphere test
-static hittable_list testSphere()
+static hittable_list test_sphere()
 {
     hittable_list world;
 
