@@ -16,33 +16,32 @@
 int main()
 {
     // Target Scene
-    //hittable_list world = cornell_with_earth();
-    hittable_list world = test_capsule();
+    hittable_list world = cornell_room_basic();
+    //hittable_list world = test_capsule();
     camera cam;
 
     // Image settings
     cam.aspect_ratio = 16.0 / 9.0;
     cam.image_width = 540;
-    cam.samples_per_pixel = 50;
+    cam.samples_per_pixel = 100;
     cam.max_depth = 50;
 
     // Camera placement for cornell box
-    /*cam.vfov = 40.0;
+    cam.vfov = 40.0;
     cam.lookfrom = point3(0.0, 1.0, -4);
     cam.lookat = point3(0.0, 1.0, 0.0);
-    cam.vup = vec3(0.0, 1.0, 0.0);*/
+    cam.vup = vec3(0.0, 1.0, 0.0);
 
     // Camera placement for test scene
-
-    cam.lookfrom = point3(0, 3, 20);
+    /*cam.lookfrom = point3(0, 3, 20);
     cam.lookat = point3(0, 1, 0);
-    cam.vup = vec3(0, 1, 0);
+    cam.vup = vec3(0, 1, 0);*/
 
 
     // Depth of field stuff
     cam.defocus_angle = 0.0;
-    cam.focus_dist = 100;
+    cam.focus_dist = 6;
 
-    cam.render_normals(world);
+    cam.render(world);
     return 0;
 }

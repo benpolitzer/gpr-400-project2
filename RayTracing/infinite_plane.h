@@ -1,7 +1,6 @@
 #pragma once
 #include "hittable.h"
 
-// Finite rectangular plane defined by a corner point and two edge vectors
 class infinite_plane : public hittable {
 public:
     infinite_plane() = default;

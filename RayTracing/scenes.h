@@ -232,6 +232,9 @@ static hittable_list cornell_room_basic()
         metal_mat
     ));
 
+    world.add(std::make_shared<cylinder>(c + vec3(0.5, 0, 0), random_in_unit_sphere(), 0.2, 0.3, red));
+    world.add(std::make_shared<capsule>(c + vec3(-0.5, 0, 0), random_in_unit_sphere(), 0.2, 0.3, red));
+
     return world;
 }
 // Box test
