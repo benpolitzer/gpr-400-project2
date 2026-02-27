@@ -134,6 +134,7 @@
     <ClInclude Include="box.h" />
     <ClInclude Include="camera.h" />
     <ClInclude Include="capsule.h" />
+    <ClInclude Include="cone.h" />
     <ClInclude Include="cylinder.h" />
     <ClInclude Include="finite_plane.h" />
     <ClInclude Include="hittable.h" />

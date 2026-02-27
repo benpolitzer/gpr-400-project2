@@ -14,7 +14,7 @@ public:
 
 	capsule() : center(), dir(), radius(1), length(1), mat(nullptr) {}
 	capsule(point3 c, vec3 d, double r, double l, shared_ptr<material> m) :
-		center(c), dir(d), radius(r), length(l), mat(std::move(m)) {
+		center(c), dir(unit_vector(d)), radius(r), length(l), mat(std::move(m)) {
 	}
 
 	bool hit(const ray& r, interval ray_t, hit_record& rec) const override

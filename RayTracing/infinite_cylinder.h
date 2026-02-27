@@ -11,7 +11,7 @@ public:
 
 	infinite_cylinder() : center(), dir(), radius(1), mat(nullptr) {}
 	infinite_cylinder(point3 c, vec3 d, double r, shared_ptr<material> m) :
-		center(c), dir(d), radius(r), mat(std::move(m)) {
+		center(c), dir(unit_vector(d)), radius(r), mat(std::move(m)) {
 	}
 
 	bool hit(const ray& r, interval ray_t, hit_record& rec) const override

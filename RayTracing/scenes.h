@@ -79,7 +79,7 @@ static hittable_list random_scene()
     return world;
 }
 
-static hittable_list random_cylinder_scene()
+static hittable_list random_shapes_scene()
 {
     hittable_list world;
 
@@ -128,7 +128,10 @@ static hittable_list random_cylinder_scene()
                     cylinder_material = std::make_shared<dielectric>(1.5);
                 }
 
-                world.add(std::make_shared<cylinder>(center, dir, 0.2, 0.1, cylinder_material));
+                if(a % 2 == 0)
+                    world.add(std::make_shared<cylinder>(center, dir, 0.1, 0.2, cylinder_material));
+                else
+                    world.add(std::make_shared<capsule>(center, dir, 0.1, 0.2, cylinder_material));
             }
         }
     }
@@ -277,7 +280,7 @@ static hittable_list test_cylinder()
     std::shared_ptr<material> white = std::make_shared<lambertian>(color(0.73, 0.73, 0.73));
     world.add(std::make_shared<cylinder>(
         point3(-1.0, 0.0, -1.0),
-        unit_vector(vec3(3.0, 0.0, 1.0)),
+        unit_vector(vec3(1.0, 0.0, 1.0)),
         1.0,
         3.0,
         white

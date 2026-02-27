@@ -27,7 +27,6 @@ public:
 
         rec.t = t;
         rec.p = r.at(t);
-        rec.normal = n;
         rec.mat = mat_;
         rec.set_face_normal(r, n);
 
